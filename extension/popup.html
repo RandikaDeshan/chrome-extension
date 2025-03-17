@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>YouTube Downloader</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { width: 350px; padding: 10px; font-family: Arial; }
+    label { margin-right: 10px; }
+    select, button, input { margin: 5px 0; }
+  </style>
+</head>
+<body>
+  <h2>Download Options</h2>
+  <label>Resolution:</label>
+  <select id="resolution">
+    <option value="480">480p</option>
+    <option value="720">720p</option>
+    <option value="1080">1080p</option>
+    <option value="1440">2K</option>
+    <option value="2160">4K</option>
+  </select><br>
+
+  <label>Format:</label>
+  <select id="format">
+    <option value="mp4">MP4</option>
+    <option value="webm">WebM</option>
+    <option value="avi">AVI</option>
+    <option value="mkv">MKV</option>
+  </select><br>
+
+  <label><input type="checkbox" id="audioOnly"> Audio Only</label>
+  <select id="audioFormat" disabled>
+    <option value="mp3">MP3</option>
+    <option value="aac">AAC</option>
+  </select><br>
+
+  <label><input type="checkbox" id="subtitles"> Subtitles</label>
+  <select id="subtitleLang">
+    <option value="en">English</option>
+    <option value="es">Spanish</option>
+    <option value="fr">French</option>
+  </select><br>
+
+  <label><input type="checkbox" id="batch"> Batch Download</label><br>
+
+  <h3>Preview</h3>
+  <video id="preview" class="preview-video" controls></video><br>
+
+  <button id="downloadBtn" class="download-btn">Download</button>
+  <script src="popup.js"></script>
+</body>
+</html>
