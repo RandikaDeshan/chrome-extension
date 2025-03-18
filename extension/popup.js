@@ -9,8 +9,7 @@ document.getElementById("downloadBtn").addEventListener("click", () => {
     audioOnly: document.getElementById("audioOnly").checked,
     audioFormat: document.getElementById("audioFormat").value,
     subtitles: document.getElementById("subtitles").checked,
-    subtitleLang: document.getElementById("subtitleLang").value,
-    batch: document.getElementById("batch").checked
+    subtitleLang: document.getElementById("subtitleLang").value
   };
 
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -19,7 +18,6 @@ document.getElementById("downloadBtn").addEventListener("click", () => {
   });
 });
 
-// Request preview URL on popup load
 chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
   chrome.runtime.sendMessage({ action: "getPreview", url: tabs[0].url }, (response) => {
     if (response && response.previewUrl) {

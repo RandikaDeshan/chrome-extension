@@ -24,19 +24,18 @@ app.post("/download", (req, res) => {
   }
 
   // Subtitles
-  let subtitleFile = `${baseOutput}.${options.subtitleLang}.srt`;
   if (options.subtitles) {
-    command += ` --write-subs --sub-lang ${options.subtitleLang} --convert-subs srt`;
-  }
-
-  // Batch Download
-  if (options.batch) {
-    command += ` --yes-playlist`;
+    if (options.subtitleLang === "all") {
+      command += ` --all-subs --write-subs --convert-subs srt`;
+    } else {
+      command += ` --write-subs --sub-lang ${options.subtitleLang} --convert-subs srt`;
+    }
   }
 
   // Output
   command += ` -o "${outputFile}" "${url}"`;
 
+  console.log("Executing command:", command); // Debug log
   exec(command, (error, stdout, stderr) => {
     if (error) {
       console.error("yt-dlp error:", stderr);
@@ -47,22 +46,45 @@ app.post("/download", (req, res) => {
     const downloadUrl = `http://localhost:${port}/downloads/${path.basename(baseOutput)}.${ext}`;
     const response = { downloadUrl };
 
-    // Check if subtitle file exists and add its URL
+    // Handle subtitles
     if (options.subtitles) {
-      const subtitlePath = `${baseOutput}.${options.subtitleLang}.srt`;
-      if (fs.existsSync(subtitlePath)) {
-        response.subtitleUrl = `http://localhost:${port}/downloads/${path.basename(subtitlePath)}`;
+      const subtitleFiles = fs.readdirSync(downloadDir)
+        .filter(file => file.startsWith(path.basename(baseOutput)) && file.endsWith(".srt"))
+        .map(file => ({
+          url: `http://localhost:${port}/downloads/${file}`,
+          lang: file.match(/\.([^.]+)\.srt$/)?.[1] || "unknown",
+          path: path.join(downloadDir, file)
+        }));
+      console.log("Subtitle files found:", subtitleFiles); // Debug log
+      if (subtitleFiles.length > 0) {
+        response.subtitleUrls = subtitleFiles.map(f => ({ url: f.url, lang: f.lang }));
       } else {
-        console.warn(`Subtitle file not found for ${options.subtitleLang}`);
+        console.warn("No subtitles found for this video.");
       }
     }
 
+    console.log("Sending response:", response); // Debug log
     res.json(response);
 
-    // Clean up after 5 minutes
+    // Cleanup after 5 minutes
     setTimeout(() => {
-      fs.unlink(`${baseOutput}.${ext}`, () => {});
-      if (fs.existsSync(subtitlePath)) fs.unlink(subtitlePath, () => {});
+      const mainFile = `${baseOutput}.${ext}`;
+      if (fs.existsSync(mainFile)) {
+        fs.unlink(mainFile, (err) => {
+          if (err) console.error(`Failed to delete ${mainFile}:`, err);
+        });
+      }
+
+      if (options.subtitles && response.subtitleUrls) {
+        response.subtitleUrls.forEach(sub => {
+          const subPath = `${baseOutput}.${sub.lang}.srt`;
+          if (fs.existsSync(subPath)) {
+            fs.unlink(subPath, (err) => {
+              if (err) console.error(`Failed to delete ${subPath}:`, err);
+            });
+          }
+        });
+      }
     }, 300000);
   });
 });
@@ -71,8 +93,10 @@ app.post("/preview", (req, res) => {
   const { url } = req.body;
   const command = `yt-dlp -f "best[height<=360]" -g "${url}"`;
 
+  console.log("Executing preview command:", command); // Debug log
   exec(command, (error, stdout) => {
     if (error) {
+      console.error("Preview error:", stderr);
       return res.json({ error: "Preview unavailable" });
     }
     const previewUrl = stdout.trim().split("\n")[0];

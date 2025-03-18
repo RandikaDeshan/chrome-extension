@@ -11,6 +11,7 @@
 </head>
 <body>
   <h2>Download Options</h2>
+
   <label>Resolution:</label>
   <select id="resolution">
     <option value="480">480p</option>
@@ -34,14 +35,13 @@
     <option value="aac">AAC</option>
   </select><br>
 
-  <label><input type="checkbox" id="subtitles"> Subtitles</label>
+  <label><input type="checkbox" id="subtitles" checked> Subtitles</label>
   <select id="subtitleLang">
     <option value="en">English</option>
     <option value="es">Spanish</option>
     <option value="fr">French</option>
+    <option value="all">All Available</option>
   </select><br>
-
-  <label><input type="checkbox" id="batch"> Batch Download</label><br>
 
   <h3>Preview</h3>
   <video id="preview" class="preview-video" controls></video><br>
